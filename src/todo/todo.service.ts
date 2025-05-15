@@ -16,16 +16,27 @@ export class TodoService {
     private readonly todoRepository: Repository<Todo>,
   ) {}
 
-  async getAllTodosForUser(userId: number) {
-    const todos = await this.todoRepository.find({
-      where: { user: { id: userId } },
-    });
-    return {
-      message: 'Todos fetched successfully',
-      data: todos,
-      totalLength: todos.length,
-    };
-  }
+async getAllTodosForUser(userId: number, page: number = 1, limit: number = 5) {
+  // Validate inputs
+  page = page > 0 ? page : 1;
+  limit = limit > 0 ? limit : 5;
+  
+  const [todos, total] = await this.todoRepository.findAndCount({
+    where: { user: { id: userId } },
+    take: limit,
+    skip: (page - 1) * limit,
+    order: { createdAt: 'DESC' } // Better to order by creation date
+  });
+
+  return {
+    message: 'Todos fetched successfully',
+    data: todos,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+}
 
   async getTodoByIdForUser(todoId: number, userId: number) {
     const todo = await this.todoRepository.findOne({

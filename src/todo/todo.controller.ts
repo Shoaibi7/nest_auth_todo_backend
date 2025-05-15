@@ -9,6 +9,7 @@ import {
   NotFoundException,
   UseGuards,
   Req,
+  Query
 } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { createTodoDTO } from './dto/createTodo.dto';
@@ -20,10 +21,14 @@ import { AuthGuard } from '@nestjs/passport';
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
-  @Get()
-  getAllTodos(@Req() req) {
-    return this.todoService.getAllTodosForUser(req.user.userId);
-  }
+ @Get()
+getAllTodos(
+  @Req() req,
+  @Query('page') page: number = 1,
+  @Query('limit') limit: number = 5
+) {
+  return this.todoService.getAllTodosForUser(req.user.userId, page, limit);
+}
 
   @Get(':id')
   async getTodoById(@Param('id') id: number, @Req() req) {
